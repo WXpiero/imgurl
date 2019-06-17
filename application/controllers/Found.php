@@ -32,29 +32,43 @@
             //每页显示16张图片
             $limit = 16;
             //echo $page;
-            $siteinfo->title = '探索发现 - '.$siteinfo->title;
+            //设置页面标题
+            if($page == 0){
+                $siteinfo->title = $siteinfo->title.'，探索发现';
+            }
+            else{
+                $page_num = $page / 16 + 1;
+                $siteinfo->title = $siteinfo->title.'，探索发现 - '."第{$page_num}页";
+            }
+            
+            //出于安全性考虑，最多显示160张图片
             
             //根据条件生成不同的SQL语句
             switch($type){
                 case 'all':
                     //查询游客上传图片总数
                     $num = $this->query->count_num('visitor')->num;
+                    $num = ($num >= 160) ? 160 : $num;
                     $config['base_url'] = "/found/all/";
                     break;
                 case 'gif':
                     $num = $this->query->count_num('gif')->num;
+                    $num = ($num >= 160) ? 160 : $num;
                     $config['base_url'] = "/found/gif/";
                     break;
                 case 'views':  
                     $num = $this->query->count_num('visitor')->num;
+                    $num = ($num >= 160) ? 160 : $num;
                     $config['base_url'] = "/found/views/";
                     break;
                 case 'large':
                     $num = $this->query->count_num('large')->num;
+                    $num = ($num >= 160) ? 160 : $num;
                     $config['base_url'] = "/found/large/";
                     break;
                 default:
                     $num = $this->query->count_num('visitor')->num;
+                    $num = ($num >= 160) ? 160 : $num;
                     $config['base_url'] = "/found/all/";
                     break;
             }
@@ -82,6 +96,7 @@
             $this->pagination->initialize($config);
             $data['page'] = $this->pagination->create_links();
 
+            //设置标题
             //加载视图
             $this->load->view('user/header',$siteinfo);
             $this->load->view('user/found',$data);

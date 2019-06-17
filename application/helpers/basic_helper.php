@@ -31,14 +31,14 @@
     //创建token
     function token($user,$pass){
         //token生成算法为：用户名 + md5后的密码 + ip + ua
-        $token = $user.$pass.get_ip().get_ua();
+        $token = $user.$pass.get_ua();
         $token = md5($token);
         
         return $token;
     }
     //判断用户是否登录
     function is_login($user,$pass){
-        $token = $user.$pass.get_ip().get_ua();
+        $token = $user.$pass.get_ua();
         $token = md5($token);
 
         $username = $_COOKIE['user'];
@@ -62,7 +62,9 @@
             case 'image/png':
             case 'image/jpeg':
             case 'image/bmp':
+            case 'image/x-ms-bmp':
             case 'image/webp':
+            case 'image/svg+xml':
                 return TRUE;
                 break;		
             default:
@@ -138,5 +140,25 @@
         else{
             return $img['path'];
         }
+    }
+    //生成4位随机数，方法来自：https://blog.csdn.net/happy_jijiawei/article/details/50581094
+    function GetRandStr($len) 
+    { 
+        $chars = array( 
+            "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",  
+            "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",  
+            "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G",  
+            "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",  
+            "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2",  
+            "3", "4", "5", "6", "7", "8", "9" 
+        ); 
+        $charsLen = count($chars) - 1; 
+        shuffle($chars);   
+        $output = ""; 
+        for ($i=0; $i<$len; $i++) 
+        { 
+            $output .= $chars[mt_rand(0, $charsLen)]; 
+        }  
+        return $output;  
     }
 ?>

@@ -31,6 +31,7 @@
             $imginfo = $this->query->onepic($imgid);
             //查询的img_imginfo
             $picinfo = $this->query->imginfo($imgid);
+            $siteinfo->description = $picinfo->client_name.",由网友上传至ImgURL图床。";
             //查询图片域名
             @$domain = $this->query->domain($imginfo->storage);
 
@@ -66,6 +67,8 @@
             );
 
             $datas['img_info'] = $conf->img_info;
+            //检测用户是否登录
+            $datas['is_login'] = $this->basic->is_login();
             // $data['title']  =   '图片浏览';
             // $data['url']    =   $domain.$imginfo->path;
             // $data['date']   =   $imginfo->date;

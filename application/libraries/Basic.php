@@ -35,7 +35,7 @@
                 $username = $userinfo->username;
                 $password = $userinfo->password;
                 //echo get_ip();
-                $password = $username.$password.get_ip().get_ua();
+                $password = $username.$password.get_ua();
                 $password = md5($password);
 
 
@@ -133,6 +133,11 @@
                     return $content;
                     break;
             }
+        }
+        //获取站点主域名
+        public function domain(){
+            $domain = $this->CI->query->get_domain();
+            return $domain;
         }
     }
 ?>

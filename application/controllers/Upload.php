@@ -21,6 +21,8 @@
         public $temp;
         //用户是否已经登录的属性
         protected $user;
+        //获取站点主域名
+        protected $main_domain;
         //构造函数
         public function __construct()
         {
@@ -44,6 +46,8 @@
             $this->load->library('basic');
             //加载查询模型
             $this->load->model('query','',TRUE);
+            $this->main_domain = $this->basic->domain();
+            
             //用户已经登录
             if($this->basic->is_login(FALSE)){
                 $this->user = 'admin';
@@ -64,7 +68,8 @@
             }
             // var_dump();
             $config['upload_path']      = $upload_path;
-            $config['allowed_types']    = 'gif|jpg|png|bmp|webp';
+            $config['allowed_types']    = 'gif|jpg|jpeg|png|bmp|webp';
+            //$config['allowed_types']    = 'image/jpeg|image/png|image/gif|image/bmp|image/x-ms-bmp|image/webp';
             $config['max_size']     = 5120;
             $config['file_ext_tolower'] = TRUE; //文件名转换为小写
             $config['overwrite'] = TRUE;        //覆盖同名文件
@@ -123,10 +128,15 @@
                 }
 
                 //CI获取获取.bmp 图片的像素，认为.bmp不是图像类型，改用其它方法获取像素
-                if($data['file_type'] == 'image/x-ms-bmp'){
+                if( $data['file_type'] === 'image/x-ms-bmp' ){
                     $tmpinfo = getimagesize($full_path);
                     $data['image_width'] = $tmpinfo[0];
                     $data['image_height'] = $tmpinfo[1];
+                }
+                //webp的图片暂时无法获取宽高，则设置为0
+                if($data['file_type'] === 'image/webp'){
+                    $data['image_width'] = 0;
+                    $data['image_height'] = 0;
                 }
                 
                 //查询图片是否上传过
@@ -149,7 +159,17 @@
                 }
                 //图片没有上传过
                 else{
-                    //需要插入到images表的数据
+                    $arr = array(
+                        "ip"    =>  get_ip(),
+                        "ua"    =>  get_ua(),
+                        "date"  =>  $this->date
+                    );
+                    
+                    //生成token
+                    $token = $this->token($arr);
+                    //生成删除链接
+                    $delete = $this->main_domain.'/delete/'.$token;
+                    //需要插入到img_images表的数据
                     $datas = array(
                         "imgid"     =>  $imgid,
                         "path"      =>  $relative_path,
@@ -159,7 +179,8 @@
                         "ua"        =>  get_ua(),
                         "date"      =>  $this->date,
                         "user"      =>  $this->user,
-                        "level"     =>  'unknown'
+                        "level"     =>  'unknown',
+                        "token"     =>  $token
                     );
                     //需要插入到imginfo表的数据
                     $imginfo = array(
@@ -183,7 +204,8 @@
                         "url"               =>  $url,
                         "thumbnail_url"     =>  $thumbnail_url,
                         "width"             =>  $data['image_width'],
-                        "height"            =>  $data['image_height']
+                        "height"            =>  $data['image_height'],
+                        "delete"            =>  $delete
                     );
                     //根据不同的类型返回不同的数据
                     $this->re_data($type,$info);
@@ -435,6 +457,23 @@
             );
             $this->succeed_msg($info);
             //echo $re;
+        }
+        /*
+        1. 该方法生成图片的唯一删除token
+        2. 参数为一个数组，内容为IP/UA/DATE
+        3. ip + ua + date + 4位随机数，进行md5加密得到token
+        */
+        protected function token($arr){
+            $ip = $arr['ip'];
+            $ua = $arr['ua'];
+            $date = $arr['date'];
+            //生成4位随机数
+            $str =  GetRandStr(4);
+            $token = $ip.$ua.$date.$str;
+            $token = md5($token);
+            //token只需要16位
+            $token = substr($token, 8, 16);
+            return $token;
         }
     }
 ?>

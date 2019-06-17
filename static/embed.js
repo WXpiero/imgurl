@@ -41,6 +41,9 @@ layui.use(['upload','form','element','layer','flow'], function(){
                 //this.url = '/upload/' + storage;
                 //console.log(this.url);
             }
+            ,accept:'file'
+            ,acceptMime:'image/webp,image/jpeg,image/pjpeg,image/bmp,image/png,image/x-png,image/gif'
+            ,exts: 'jpg|jpeg|png|gif|bmp|webp'
             ,size:5120
             ,before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
                 layer.load(); //上传loading
@@ -65,6 +68,7 @@ layui.use(['upload','form','element','layer','flow'], function(){
                     $("#html").val("<img src = '" + res.url + "' />");
                     $("#markdown").val("![](" + res.url + ")");
                     $("#bbcode").val("[img]" + res.url + "[/img]");
+                    $("#dlink").val(res.delete);
                     $("#imgshow").show();
                     //对图片进行鉴黄识别
                     identify(res.id);
@@ -80,6 +84,9 @@ layui.use(['upload','form','element','layer','flow'], function(){
         upload.render({
             elem: '#multiple'
             ,url: '/upload/localhost'
+            ,accept:'file'
+            ,acceptMime:'image/webp,image/jpeg,image/pjpeg,image/bmp,image/png,image/x-png,image/gif'
+            ,exts: 'jpg|jpeg|png|gif|bmp|webp'
             ,multiple:true
             ,size:5120
             ,number:5     //可同时上传数量
@@ -89,6 +96,7 @@ layui.use(['upload','form','element','layer','flow'], function(){
                 $("#re-html pre").empty();
                 $("#re-md pre").empty();
                 $("#re-bbc pre").empty();
+                $("#re-dlink pre").empty();
                 layer.load(); //上传loading
                 n = 0;
             }
@@ -104,7 +112,7 @@ layui.use(['upload','form','element','layer','flow'], function(){
                 if(res.code == 200){
                     //得到百分比
                     //var col = (n / total) * 100;
-                    multiple(res.url);
+                    multiple(res.url,res.delete);
                     //对图片进行鉴黄识别
                     identify(res.id);
                     //element.progress('up-status', col + '%');
@@ -122,11 +130,12 @@ layui.use(['upload','form','element','layer','flow'], function(){
 });
 
 //显示多图上传结果
-function multiple(url){
+function multiple(url,dlink){
     $("#re-url pre").append(url + "<br>");
     $("#re-html pre").append("&lt;img src = '" + url + "' /&gt;" + "<br>");
     $("#re-md pre").append("![](" + url + ")" + "<br>");
     $("#re-bbc pre").append("[img]" + url + "[/img]" + "<br>");
+    $("#re-dlink pre").append(dlink + "<br>");
 }
 
 //复制链接
@@ -261,3 +270,8 @@ function createAndDownloadFile(fileName, content) {
     aTag.click();
     URL.revokeObjectURL(blob);
 }
+
+//改用jquery异步加载背景图
+// $(document).ready(function(){
+// 	$("body").css("background-image","url('/static/images/bg.jpg')");
+// });
